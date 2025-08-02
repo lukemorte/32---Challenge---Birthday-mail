@@ -12,13 +12,15 @@
 import pandas
 import random
 import smtplib
+import datetime as dt
 
 
 # const & vars
 
 BIRTHDATES_FILE = "birthdays.csv"
 
-birth_data = {}
+birth_data = None
+birth_data_match_today = None
 
 
 def get_people_data():
@@ -29,12 +31,29 @@ def get_people_data():
     except FileNotFoundError:
         print("File not found.")
 
-    else:
-        print()
+
+def get_people_data_match_today(data):
+    now = dt.datetime.now()
+    arr = []
+
+    for user in data:
+        user_date = dt.datetime(year=user["year"], month=user["month"], day=user["day"])
+        if user_date.year == now.year and user_date.month == now.month and user_date.day == now.day:
+            arr.append(user)
+
+    return arr
+
+
+def prepare_random_mail(user):
+    pass
+
+
+# code
 
 
 birth_data = get_people_data()
+birth_data_match_today = get_people_data_match_today(birth_data)
 
-if birth_data:
-    for n in birth_data:
-        print(n)
+if birth_data_match_today:
+    for user in birth_data_match_today:
+        prepare_random_mail(user)
