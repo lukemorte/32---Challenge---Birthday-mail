@@ -12,12 +12,19 @@
 import pandas
 import random
 import smtplib
+from email.message import EmailMessage
 import datetime as dt
+import os
 
 
 # const & vars
 
+MAIL_HOST = "smtp.seznam.cz"
+MAIL_USER = "py_test@seznam.cz"
+MAIL_PASSWORD = "jjz!AtuDYiN#46@"
+
 BIRTHDATES_FILE = "birthdays.csv"
+LETTER_TAMPLATES_DIR = "./letter_templates/"
 
 birth_data = None
 birth_data_match_today = None
@@ -44,8 +51,31 @@ def get_people_data_match_today(data):
     return arr
 
 
-def prepare_random_mail(user):
-    pass
+def get_named_random_letter(user):
+    all_letter_files = [f for f in os.listdir("./letter_templates")
+                        if f.startswith("letter_") and f.endswith(".txt")]
+    random_letter = random.choice(all_letter_files)
+    print(LETTER_TAMPLATES_DIR + random_letter)
+
+    with open(LETTER_TAMPLATES_DIR + random_letter) as file:
+        letter = file.read()
+        letter = letter.replace("[NAME]", user["name"])
+
+    return letter
+
+
+def send_mail(user, letter):
+    with smtplib.SMTP(MAIL_HOST) as connection:
+        connection.starttls()
+        connection.login(user=MAIL_USER, password=MAIL_PASSWORD)
+
+        msg = EmailMessage()
+        msg.set_content(letter)
+        msg["Subject"] = f"Happy birthday {user["name"]}"
+        msg["From"] = MAIL_USER
+        msg["To"] = user["email"]
+
+        connection.send_message(msg)
 
 
 # code
@@ -56,4 +86,5 @@ birth_data_match_today = get_people_data_match_today(birth_data)
 
 if birth_data_match_today:
     for user in birth_data_match_today:
-        prepare_random_mail(user)
+        letter = get_named_random_letter(user)
+        send_mail(user, letter)
